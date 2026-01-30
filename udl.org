@@ -1,0 +1,214 @@
+* Notebook 1.1 --- Background Mathematics
+
+#+begin_src jupyter-julia :session jl :async yes
+using Plots, LaTeXStrings, Measures, Printf, LinearAlgebra
+
+pgfplotsx()
+PGFPlotsX.CUSTOM_PREAMBLE = [raw"\usepackage{newpx}"]
+#+end_src
+
+#+RESULTS:
+: 1-element Vector{String}:
+:  "\\usepackage{newpx}"
+
+#+begin_src jupyter-julia :session jl :async yes
+f(x; β=0, ω=1) = β + ω * x
+
+p = plot(x -> f(x, β=10, ω=-2), 0:10,
+    xlims=(0, 10),
+    ylims=(0, 10),
+    xlabel=L"x",
+    ylabel=L"f(x)",
+    title="1D linear function",
+    legend=false,
+    titlefontsize = 20,
+    guidefontsize = 20,
+    tickfontsize = 14,
+    background_color=:transparent,
+    background_color_inside=:transparent
+)
+
+io = IOBuffer()
+show(io, MIME("image/svg+xml"), p)
+svg_content = String(take!(io))
+cleaned_svg = replace(svg_content, r"<path[^>]*fill=\"rgb\(100%, 100%, 100%\)\"[^>]*/>" => "")
+display("image/svg+xml", cleaned_svg)
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/c3a14894398e4b96f5121a06bf7a193fb9c726ee.svg]]
+
+#+begin_src jupyter-julia :session jl :async yes
+f(x1, x2; β, ω1, ω2) = β + ω1 * x1 + ω2 * x2
+f′(x1, x2) = f(x1, x2, β=0, ω1=1, ω2=-0.5)
+
+p_sf = surface(1:10, 1:10, f′,
+    zlabel=L"y",
+    guidefontsize=14
+)
+p_ct = contour(1:10, 1:10, f′,
+    guidefontsize=18
+)
+
+plot(p_sf, p_ct,
+    legend=false,
+    title="2D linear function",
+    xlabel=L"x_1",
+    ylabel=L"x_2",
+    size=(1000, 500),
+    margin=15mm
+)
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/0300dd89b97a107cf1140e89e79f18ef4feb9f0d.svg]]
+
+#+begin_src jupyter-julia :session jl :async yes
+f(x₁, x₂, x₃; β, ω₁, ω₂, ω₃) = β + ω₁ * x₁ + ω₂ * x₂ + ω₃ * x₃
+
+β₁, β₂ = 0.5, 0.2
+ω₁₁, ω₁₂, ω₁₃ = 1, 0.4, -0.3
+ω₂₁, ω₂₂, ω₂₃ = 0.1, 0.1, 1.2
+
+f₁(x₁, x₂, x₃) = f(x₁, x₂, x₃, β=β₁, ω₁=ω₁₁, ω₂=ω₁₂, ω₃=ω₁₃)
+f₂(x₁, x₂, x₃) = f(x₁, x₂, x₃, β=β₂, ω₁=ω₂₁, ω₂=ω₂₂, ω₃=ω₂₃)
+
+x₁, x₂, x₃ = 4, -1, 2
+
+y₁ = f₁(x₁, x₂, x₃)
+y₂ = f₂(x₁, x₂, x₃)
+println("Individual equations:")
+@printf "y₁ = %f\ny₂ = %f\n\n" y₁ y₂
+
+𝛃 = [β₁; β₂]
+𝛀 = [ω₁₁ ω₁₂ ω₁₃; ω₂₁ ω₂₂ ω₂₃]
+𝐱 = [x₁; x₂; x₃]
+
+𝐲 = 𝛃 + 𝛀 * 𝐱
+println("Matrix/vector form:")
+@printf "y₁ = %f\ny₂ = %f" 𝐲[1] 𝐲[2]
+#+end_src
+
+#+RESULTS:
+: Individual equations:
+: y₁ = 3.500000
+: y₂ = 2.900000
+: 
+: Matrix/vector form:
+: y₁ = 3.500000
+: y₂ = 2.900000
+
+*1.* /A single linear equation with three inputs (i.e., =linear_function_3D()=) associates a value \( y \) with each point in a 3D space (\( x_1 \), \( x_2 \), \( x_3 \)). Is it possible to visualize this? What value is at position \( (0, 0, 0) \)?/
+
+— Not with a static image, which is limited to three-dimensional representations. We would need four dimensions to visualize the three inputs \( x_1 \), \( x_2 \), \( x_3 \) and the output \( y \). The only way for this to be acomplished would be to use time as the fourth dimension, creating an animated image where one of the input variables changes with time. Otherwise, we would have to resort to dimensionality reduction techniques. The value of \( y \) at \( (0, 0, 0) \) is just \( \beta \), since all other terms are cancelled.
+
+*2.* Write code to compute three linear equations with two inputs (\( x_1 \), \( x_2 \)) using both the individual equations and the matrix form (you can make up any values for the inputs \( \beta_i \) and the slopes \( \omega_{ij} \).
+
+#+begin_src jupyter-julia :session jl :async yes
+f(x₁, x₂; β, ω₁, ω₂) = β + ω₁ * x₁ + ω₂ * x₂
+
+f₁(x₁, x₂) = f(x₁, x₂, β=0, ω₁=1, ω₂=1)
+f₂(x₁, x₂) = f(x₁, x₂, β=5, ω₁=0, ω₂=2)
+f₃(x₁, x₂) = f(x₁, x₂, β=-5, ω₁=-2, ω₂=0)
+
+f(𝐱; β, 𝛚) = β + 𝛚 * 𝐱
+
+𝛃 = [0, 5, -5]
+𝛀 = [1 1; 0 2; -2 0]
+
+plts = [
+    heatmap(1:10, 1:10,
+        (x₁, x₂) -> 𝛃[i] + 𝛀[i, 1] * x₁ + 𝛀[i, 2] * x₂,
+        title  = L"y_%$i",
+        xlabel = L"x_{%$(i)1}",
+        ylabel = L"x_{%$(i)2}",
+        fill   = true
+    )
+    for i ∈ axes(𝛀, 1)
+]
+
+plot(plts...,
+    size=(1000, 350),
+    margin=5mm,
+    layout=(1, 3),
+    legend=false,
+    titlefontsize=16,
+    guidefontsize=12
+)
+#+end_src
+
+#+RESULTS:
+
+[[file:./.ob-jupyter/61f588f71ef16f92c2696993f6b86be8d60214d0.svg]]
+
+#+begin_src jupyter-julia :session jl :async yes
+plot(exp, -5, 5,
+    legend=false,
+    xlabel=L"x",
+    ylabel=L"\exp x",
+    guidefontsize=16,
+)
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/8f3aeb3891dc529388fdfe30f41a9387c88099d4.svg]]
+
+*1.* /What is \( \exp 0 \)?/
+
+--- \( 1 \)
+
+*2.* /What is \( \exp 1 \)?/
+
+--- \( e \)
+
+*3.* /What is \( \exp -\infty \)?/
+
+--- \( 0 \)
+
+*4.* /What is \( \exp +\infty \)?/
+
+--- \( +\infty \)
+
+*5.* /A function is convex if we can draw a straight line between any two points on the function, and the line lies above the function everywhere between these two points. Similarly, a function is concave if a straight line between any two points lies below the function everywhere between these two points. Is the exponential function convex or concave or neither?/
+
+--- It is convex. Any straight line between two points on the \(\exp\) function is strictly above the function. The second derivative \(f''(x) = e^x = \exp x\) is strictly positive for all \(x \in \mathbb R\).
+
+#+begin_src jupyter-julia :session jl :async yes
+plot(log, -5, 10,
+    xlabel=L"x",
+    ylabel=L"\log x",
+    legend=false,
+    guidefontsize=16
+)
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/8a8871963434f1070d4059e44717884f1f383bb0.svg]]
+
+*1.* /What is \(\log 0\)?/
+
+--- Undefined. The logarithm function \(\log x\) is not defined for \(x \le 0\) in \(\mathbb R\)
+
+*2.* /What is \(\log 1\)?/
+
+--- \(0\)
+
+*3.* /What is \(\log e\)?/
+
+--- \(1\)
+
+*4.* /What is \(\log(\exp 3)\)?/
+
+--- \(3\)
+
+*5.* /What is \(\exp(\log 4)\)?/
+
+--- \(4\)
+
+*6.* /What is \(\log(-1)\)/
+
+--- Undefined.
+
+*7.* /Is the logarithm function concave or convex?/
+
+--- It is concave. Any straight line between two points on the \(\log\) function is strictly below the function. The second derivative \( f''(x) = -1/x^2 \) is strictly negative for all \( x \in \mathbb{R} \).
