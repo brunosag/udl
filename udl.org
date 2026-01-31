@@ -212,3 +212,79 @@ plot(log, -5, 10,
 *7.* /Is the logarithm function concave or convex?/
 
 --- It is concave. Any straight line between two points on the \(\log\) function is strictly below the function. The second derivative \( f''(x) = -1/x^2 \) is strictly negative for all \( x \in \mathbb{R} \).
+
+* Notebook 2.1 --- Supervised Learning
+
+#+begin_src jupyter-julia :session jl :async yes
+using LinearAlgebra, Plots, LaTeXStrings, Printf
+
+pgfplotsx()
+PGFPlotsX.CUSTOM_PREAMBLE = [raw"\usepackage{newpx}"]
+
+default(
+    guidefontsize=14,
+    legendfontsize=12
+)
+
+𝐱 = [0.03, 0.19, 0.34, 0.46, 0.78, 0.81, 1.08, 1.18, 1.39, 1.60, 1.65, 1.90]
+𝐲 = [0.67, 0.85, 1.05, 1.0, 1.40, 1.5, 1.3, 1.54, 1.55, 1.68, 1.73, 1.6]
+
+f(𝐱, 𝛟) = muladd.(𝐱, 𝛟[2], 𝛟[1])
+L(𝛟) = sum(abs2, f(𝐱, 𝛟) .- 𝐲)
+#+end_src
+
+#+RESULTS:
+: L (generic function with 1 method)
+
+#+begin_src jupyter-julia :session jl :async yes
+function compute_and_plot_loss(;𝛟)
+    𝐱ₚ = 0:2
+    𝐲ₚ = f(𝐱ₚ, 𝛟)
+
+    println("L(ϕ₀=$(𝛟[1]), ϕ₁=$(𝛟[2])) = $(L(𝛟))")
+    plot(𝐱ₚ, 𝐲ₚ,
+        label=L"f_{\boldsymbol{\phi}}(x)",
+        xlabel=L"x",
+        ylabel=L"y"
+    )
+    scatter!(𝐱, 𝐲, label="Data")
+end
+
+compute_and_plot_loss(𝛟=[0.4, 0.2])
+#+end_src
+
+:RESULTS:
+: L(ϕ₀=0.4, ϕ₁=0.2) = 7.067864
+[[file:./.ob-jupyter/5cb02ae2a5cdbf10ecd225020150beb99ac64b38.svg]]
+:END:
+
+#+begin_src jupyter-julia :session jl :async yes
+compute_and_plot_loss(𝛟=[1.6, -0.8])
+#+end_src
+
+:RESULTS:
+: L(ϕ₀=1.6, ϕ₁=-0.8) = 10.279524
+
+[[file:./.ob-jupyter/07fac69936ba4574f909e5b121a81ce74e30cccb.svg]]
+:END:
+
+#+begin_src jupyter-julia :session jl :async yes
+compute_and_plot_loss(𝛟=[0.8, 0.5])
+#+END_src
+
+:RESULTS:
+: L(ϕ₀=0.8, ϕ₁=0.5) = 0.22852499999999987
+[[file:./.ob-jupyter/eecc6c943abebcc3ca18f795284140a3acd5ba49.svg]]
+:END:
+
+#+begin_src jupyter-julia :session jl :async yes
+heatmap(0.75:0.01:0.9, 0.45:0.01:0.6, (ϕ₀, ϕ₁) -> L([ϕ₀, ϕ₁]),
+    clims=(0.2, 0.25),
+    c=cgrad(:viridis, rev=true, scale=:exp),
+    xlabel=L"\phi_0",
+    ylabel=L"\phi_1"
+)
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/19af3c14f7f3f62fa4a91aa4c55cba3429f4148b.svg]]
