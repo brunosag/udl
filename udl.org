@@ -358,3 +358,286 @@ heatmap(0.75:0.01:0.9, 0.45:0.01:0.6, (ϕ₀, ϕ₁) -> L([ϕ₀, ϕ₁]),
 \end{align*}
 
 *2.3.* /Consider reformulating linear regression as a generative model, so we have \( x = \mathrm{g}[y, \boldsymbol{\phi}] = \phi_{0} + \phi_{1} y \). What is the new loss function? Find an expression for the inverse function \( y = \mathrm{g}^{-1}[x, \boldsymbol{\phi}] \) that we would use to perform inference. Will this model make the same predictions as the discriminative version for a given training dataset \( \{x_i, y_i\} \)? One way to establish this is to write code that ftis a line to three data points using both methods and see if the result is the same./
+* Problems 3.1--3.8 (Shallow Neural Networks)
+
+*3.1.* /What kind of mapping from input to output would be created if the activation function in equation 3.1 was linear so that \( \mathrm{a}[z] = \psi_0 + \psi_1 z \)? What kind of mapping would be created if the activation function was removed, so \( \mathrm{a}[z] = z \)?/
+
+-----
+
+The equation resulting from a linear activation would be as follows:
+
+\begin{align*}
+\mathrm{a}[z] &= \psi_0 + \psi_1 z \\
+&= \psi_0 + \psi_1 (\theta_0 + \theta_1 x) \\
+&= \psi_0 + \psi_1 \theta_0 + \psi_1 \theta_1 x.
+\end{align*}
+
+Let \( \theta_0' = \psi_0 + \psi_1 \theta_0 \) and \( \theta_1' = \psi_1 \theta_1 \). Since \( \theta'_0 \) and \( \theta'_1 \) are constants, the result is a linear function:
+
+\begin{align*}
+\mathrm{a}[z] = \theta'_0 + \theta'_1 z.
+\end{align*}
+
+So the result is the same as having no activation function, only with modified parameters. If this is the case, each hidden unit becomes a regular linear function. When these are weighted and summed, the final equation is also linear.
+
+In conclusion, a nonlinear activation function is necessary to “break” the function’s linearity.
+
+-----
+
+*3.2* /For each of the four linear regions in figure 3.3j, indicate which hidden units are inactive and which are active (i.e., which do and do not clip their inputs)./
+
+-----
+
++ Region 1: \( h_3 \)
++ Region 2: \( h_1 \), \( h_3 \)
++ Region 3: \( h_1 \), \( h_2 \), \( h_3 \)
++ Region 4: \( h_1 \), \( h_2 \)
+
+-----
+
+*3.3* /Derive expressions for the positions of the “joints” in function in figure 3.3j in terms of the ten parameters \( \boldsymbol{\phi} \) and the input \( x \). Derive expressions for the slopes of the four linear regions./
+
+-----
+
+The “joints” take place where the linear functions pass through 0, which is where the ReLU “cut” happens, resulting in the four distinct slopes:
+
+\begin{align*}
+\theta_0 + \theta_1 x = 0 \\
+x = \frac{-\theta_0}{\theta_1}.
+\end{align*}
+
+Therefore, the 3 division points on the x-axis are:
+
+\begin{align*}
+x_1 = \frac{-\theta_{10}}{\theta_{11}}
+&& x_2 = \frac{-\theta_{20}}{\theta_{21}}
+&& x_3 = \frac{-\theta_{30}}{\theta_{31}}.
+\end{align*}
+
+As for the slopes, we simply sum the slopes from the linear functions of each active hidden unit, multiplied by their respective weights:
+
+\begin{align*}
+\text{S}_1 &= \phi_3 \theta_{31} \\
+\text{S}_2 &= \phi_1 \theta_{11} + \phi_3 \theta_{31} \\
+\text{S}_2 &= \phi_1 \theta_{11} + \phi_2 \theta_{21} + \phi_3 \theta_{31} \\
+\text{S}_2 &= \phi_1 \theta_{11} + \phi_2 \theta_{21}.
+\end{align*}
+
+-----
+
+*3.4* /Draw a version of figure 3.3 where the y-intercept and slope of the third hidden unit have changed as in figure 3.14c. Assume that the remaining parameters remain the same./
+
+-----
+
+#+begin_src jupyter-julia :session jl :async yes
+using Plots, LaTeXStrings
+
+pgfplotsx()
+PGFPlotsX.CUSTOM_PREAMBLE = [raw"\usepackage{newpx}"]
+
+f₁(x) = -0.2 + 0.4x
+f₂(x) = -0.9 + 0.9x
+f₃(x) = -1.1 + 0.7x
+a(x) = max(0, x)
+
+plot(
+    plot(f₃, 0, 2, title=L"\theta_{30} + \theta_{31}x"),
+    plot(x -> a(f(x)), 0, 2, title=L"h_3 = \mathrm{a}[\theta_{30} + \theta_{31}x]"),
+    plot(x -> 0.7 * a(f₃(x)), 0, 2, title=L"\phi_3 h_3"),
+    plot(x -> -1.2 * a(f₁(x)) + 1.1 * a(f₂(x)) + 0.7 * a(f₃(x)), 0, 2, title=L"\phi_1 h_1 + \phi_2 h_2 + \phi_3 h_3"),
+    ylims=(-1, 1),
+    lw=2,
+    legend=false,
+)
+#+end_src
+
+#+RESULTS:
+
+[[file:./.ob-jupyter/b623a71ccdd55ed85e2139731fa4979aa924e227.svg]]
+
+-----
+
+*3.5* /Prove that the following property holds for \( \alpha \in \mathbb{R}^+ \):/
+
+\begin{align*}
+\textrm{ReLU}[\alpha \cdot z] = \alpha \cdot \textrm{ReLU}[z].
+\end{align*}
+
+/This is known as the non-negative homogeneity property of the ReLU function./
+
+-----
+
+\begin{align*}
+\textrm{ReLU}[\alpha \cdot z] &= \max(0, \alpha \cdot z) & (\text{by definition}) \\
+&= \max(\alpha \cdot 0, \alpha \cdot z) & (\text{since } \alpha \cdot 0 = 0) \\
+&= \alpha \cdot \max(0, z) & (\text{since } \alpha > 0 \text{ allows factoring}) \\
+&= \alpha \cdot \textrm{ReLU}[z] .
+\end{align*}
+
+-----
+
+*3.6* /Following on from problem 3.5, what happens to the shallow network defined in equations 3.3 and 3.4 when we multiply the parameters \( \theta_{10} \) and \( \theta_{11} \) by a positive constant \( \alpha \) and divide the slope \( \phi_1 \) by the same parameter \( \alpha \)? What happens if \( \alpha \) is negative?/
+
+-----
+
+Multiplying \( \theta_{10} \) and \( \theta_{11} \) by a constant \( \alpha \) is equivalent to multiplying the entire linear function by this constant:
+
+\begin{align*}
+\alpha \theta_{10} + \alpha \theta_{11} x = \alpha(\theta_{10} + \theta_{11} x).
+\end{align*}
+
+Given the non-negative homogenity property of the ReLU function (showed on problem 3.5), it follows that \( \mathrm{a}[\alpha \cdot z] = \alpha \cdot \mathrm{a}[z] \) and, thus:
+
+\begin{align*}
+\mathrm{a} [\alpha (\theta_{10} + \theta_{11} x)] &= \alpha \cdot \mathrm{a} [\theta_{10} + \theta_{11} x] \\
+&= \alpha h_1.
+\end{align*}
+
+This term is then multiplied by \( \phi_1 \), which if divided by the same constant \( \alpha \), results in the original slope:
+
+\begin{align*}
+\frac{\phi_1}{\alpha} \alpha h_1 = \phi_1 h_1.
+\end{align*}
+
+If \( \alpha \) is negative, multiplying \( \theta_{1\bullet} \) by it will cause the original linear function to flip on the x-axis, consequently activating the previously inactive area and vice-versa:
+
+\begin{align*}
+\mathrm{ReLU}[\alpha \cdot z] &= \max(0, \alpha \cdot z) \\
+&= \max(0, -|\alpha| \cdot z) & (\text{given } \alpha < 0) \\
+&= -\min(0, |\alpha| \cdot z) \\
+&= -|\alpha| \cdot \min(0, z) \\
+&= \alpha \cdot \min(0, z).
+\end{align*}
+
+In this case, dividing the slope by \( \alpha \) will undo the scaling and flip the active region on the x-axis.
+
+Therefore, the overall effect of these operations when \( \alpha \) is negative is swapping the active and inactive regions of the hidden unit, creating a negative-only rectifier. That is:
+
+\begin{align*}
+\frac{\phi_1}{\alpha} \cdot \textrm{ReLU}[\alpha \cdot z] &= \frac{\phi_1}{\alpha} \cdot \alpha \min(0, z) & (\text{given } \alpha < 0) \\
+&= \phi_1 \min(0, z).
+\end{align*}
+
+-----
+
+*3.7* /Consider fitting the model in equation 3.1 using a least squares loss function. Does this loss function have a unique minimum? i.e., is there a single “best” set of parameters?/
+
+-----
+
+The loss function cannot have a unique minumum. Even if the data can be perfectly described by a 4-region piecewise linear function, the hidden units can always be swapped without altering the final function.
+
+-----
+
+*3.8* /Consider replacing the ReLU activation function with (i) the Heaviside step function \( \textrm{heaviside}[z] \), (ii) the hyperbolic tangent function \( \mathrm{tanh}[z] \), and (iii) the rectangular function \( \mathrm{rect}[z] \), where:/
+
+\begin{align*}
+\textrm{heaviside}[z] = \begin{cases}
+0, & z < 0 \\
+1, & z \ge 0
+\end{cases} &&
+\textrm{rect}[z] = \begin{cases}
+0, & z < 0 \\
+1, & 0 \le z \le 1 \\
+0, & z > 1.
+\end{cases}
+\end{align*}
+
+/Redraw a version of figure 3.3 for each of these functions. The original parameters were:/
+
+\begin{align*}
+\boldsymbol{\phi} &= \{ \phi_0, \phi_1, \phi_2, \phi_3, \phi_{10}, \phi_{11}, \phi_{20}, \phi_{21}, \phi_{30}, \phi_{31} \} \\
+&= \{ -0.23, -1.3, 1.3, 0.66, -0.2, 0.4, -0.9, 0.9, 1.1, -0.7 \}.
+\end{align*}
+
+/Provide an informal description of the family of functions that can be created by neural networks with one input, three hidden units, and one output for each activation function./
+
+-----
+
+#+begin_src jupyter-julia :session jl :async yes
+using Plots, LaTeXStrings
+
+pgfplotsx()
+PGFPlotsX.CUSTOM_PREAMBLE = [raw"\usepackage{newpx}"]
+
+x = 0:0.01:2
+ϕ = [-0.23, -1.3, 1.3, 0.66]
+θ = [-0.2 -0.9 1.1
+     0.4 0.9 -0.7]
+
+l₁(x) = θ[1, 1] + θ[2, 1] * x
+l₂(x) = θ[1, 2] + θ[2, 2] * x
+l₃(x) = θ[1, 3] + θ[2, 3] * x
+
+function plot_activation(a, plot_title)
+    f(x) = ϕ[1] + ϕ[2] * a(l₁(x)) + ϕ[3] * a(l₂(x)) + ϕ[4] * a(l₃(x))
+
+    fig_data = [
+        (x -> l₁(x), L"\theta_{10} + \theta_{11} x"),
+        (x -> l₂(x), L"\theta_{20} + \theta_{21} x"),
+        (x -> l₃(x), L"\theta_{30} + \theta_{31} x"),
+        (x -> a(l₁(x)), L"h_1 = \mathrm{a}[\theta_{10} + \theta_{11} x]"),
+        (x -> a(l₂(x)), L"h_2 = \mathrm{a}[\theta_{20} + \theta_{21} x]"),
+        (x -> a(l₃(x)), L"h_3 = \mathrm{a}[\theta_{30} + \theta_{31} x]"),
+        (x -> ϕ[1] * a(l₁(x)), L"\phi_1 h_1"),
+        (x -> ϕ[2] * a(l₂(x)), L"\phi_2 h_2"),
+        (x -> ϕ[3] * a(l₃(x)), L"\phi_3 h_3"),
+        (x -> f(x), L"\phi_0 + \phi_1 h_1 + \phi_2 h_2 + \phi_3 h_3")
+    ]
+    subplots = map(fig_data) do (f, title)
+        plot(f, x, title=title)
+    end
+
+    plot(
+        subplots...,
+        legend=false,
+        layout=(4, 3),
+        size=(900, 1200),
+        ylims=(-1, 1),
+        xlabel=L"x",
+        ylabel=L"y",
+        plot_title=plot_title
+    )
+end
+#+end_src
+
+#+RESULTS:
+: plot_activation (generic function with 1 method)
+
+#+begin_src jupyter-julia :session jl :async yes
+ReLU(x) = max(0, x)
+plot_activation(ReLU, "ReLU")
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/cd2c9af339ced413fc2fcf7cc0ef17ace7ddd77c.svg]]
+
+/ReLU:/ Piecewise linear functions with 4 linear regions.
+
+#+begin_src jupyter-julia :session jl :async yes
+heaviside(x) = x < 0 ? 0 : 1
+plot_activation(heaviside, "heaviside")
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/6eea80b6641b23c14ef3fafb80a172d4fa058c26.svg]]
+
+/heaviside:/ Piecewise “constant” functions with 4 constant regions.
+
+#+begin_src jupyter-julia :session jl :async yes
+plot_activation(tanh, "tanh")
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/7be2d0691d5079435d4191c3dfa7a51c46b805ce.svg]]
+
+/tanh:/ Piecewise hyperbolic functions with 4 regions. Perhaps a “smoothed-out” version of the /heaviside/ function, where the transition is a hyperbola instead of a direct jump.
+
+#+begin_src jupyter-julia :session jl :async yes
+rect(x) = (0 <= x <= 1) ? 1 : 0
+plot_activation(rect, "rect")
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/c0e22aee34cde951dc5bd6e9636210fd6fecccec.svg]]
+
+/rect:/ Piecewise “constant” functions with 7 constant regions.
