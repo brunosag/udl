@@ -288,3 +288,73 @@ heatmap(0.75:0.01:0.9, 0.45:0.01:0.6, (ϕ₀, ϕ₁) -> L([ϕ₀, ϕ₁]),
 
 #+RESULTS:
 [[file:./.ob-jupyter/19af3c14f7f3f62fa4a91aa4c55cba3429f4148b.svg]]
+* Problems 2.1--2.3 (Supervised Learning)
+
+*2.1.* /To walk “downhill” on the loss function (equation 2.5), we measure its gradient with respect to the parameters \( \phi_0 \) and \( \phi_1 \). Calculate expressions for the slopes \( \partial L / \partial \phi_0 \) and \( \partial L / \partial \phi_1 \)./
+
+\begin{align*}
+\frac{\partial L}{\partial \phi_0} &= \frac{\partial}{\partial \phi_0} \sum_{i=1}^I (\mathrm{f}[x_i, \boldsymbol{\phi}] - y_i)^2 \\
+&= \sum_{i=1}^I \frac{\partial}{\partial \phi_0} (\phi_0 + \phi_1 x_i - y_i)^2 \\
+&= \sum 2(\phi_0 + \phi_1 x_i - y_i) \cdot \frac{\partial}{\partial{\phi_0}} (\phi_0 + \phi_1 x_i - y_i) \\
+&= 2 \sum_{i=1}^I (\phi_0 + \phi_1 x_i - y_i)
+\end{align*}
+
+\begin{align*}
+\frac{\partial L}{\partial \phi_1} &= \frac{\partial}{\partial \phi_1} \sum_{i=1}^I (\mathrm{f}[x_i, \boldsymbol{\phi}] - y_i)^2 \\
+&= \sum_{i=1}^I \frac{\partial}{\partial \phi_1} (\phi_0 + \phi_1 x_i - y_i)^2 \\
+&= \sum 2 (\phi_0 + \phi_1 x_i - y_i) \cdot \frac{\partial}{\partial \phi_1} (\phi_0 + \phi_1 x_i - y_i) \\
+&= \sum 2 (\phi_0 + \phi_1 x_i - y_i) \cdot x_i \\
+&= 2 \sum_{i=0}^I x_i (\phi_0 + \phi_1 x_i - y_i)
+\end{align*}
+
+*2.2.* /Show that we can find the minimum of the loss function in closed form by setting the expression for the derivatives from problem 2.1 to zero and solving for \( \phi_0 \) and \( \phi_1 \). Note that this works for linear regression but not for more complex models; this is why we use iterative model fitting methods like gradient descent (figure 2.4)./
+
+\begin{align*}
+\frac{\partial L}{\partial \phi_0} = {} & 2 \sum_{i=1}^I (\phi_0 + \phi_1 x_i - y_i) = 0 \\
+\implies & I \phi_0 + \phi_1 \sum x_i - \sum y_i = 0 \\
+\implies & \phi_0 = \frac{\sum y_i}{I} - \phi_1 \frac{\sum x_i}{I} \\
+\implies & \phi_0 = \bar{y} - \phi_1 \bar{x}
+\end{align*}
+
+\begin{align*}
+\frac{\partial L}{\partial \phi_1} = {} & 2 \sum_{i=1}^I x_i (\phi_0 + \phi_1 x_i - y_i) = 0 \\
+\implies & \sum (\phi_1 x_i^2 + \phi_0 x_i - x_i y_i) = 0 \\
+\implies & \phi_1 \sum  x_i^2 = \sum x_i y_i - \phi_0 \sum x_i \\
+\implies & \phi_1 \sum  x_i^2 = \sum x_i y_i - (\bar{y} - \phi_1 \bar{x}) \sum x_i \\
+\implies & \phi_1 \sum  x_i^2 = \sum x_i y_i - \bar{y} \sum x_i + \phi_1 \bar{x} \sum x_i \\
+\implies & \phi_1 \left( \sum x_i^2 - \bar{x} \sum x_i \right) = \sum x_i y_i - \bar{y} \sum x_i \\
+\implies & \phi_1 = \frac{\sum x_i y_i - \bar{y} \sum x_i}{\sum x_i^2 - \bar{x} \sum x_i} \\
+\implies & \phi_1 = \frac{\sum x_i y_i - \bar{y} \sum x_i}{\sum x_i^2 - I \bar{x}^2} \\
+\implies & \phi_1 = \frac{\sum x_i y_i - I \bar{x} \bar{y}}{\sum (x_i - \bar{x})^2} \\
+\implies & \phi_1 = \frac{\sum_{i=1}^I (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^I (x_i - \bar{x})^2}
+\end{align*}
+
+\begin{align*}
+\frac{\partial L}{\partial \phi_{1}} = {} & 2 \sum_{i=1}^I x_i (\phi_{0} + \phi_{1} x_i - y_i) = 0 \\
+\implies & \sum (\phi_{1} x_i^{2} + \phi_{0} x_i - x_i y_i) = 0 \\
+\implies & \phi_{1} \sum x_i^{2} = \sum x_i y_i - \phi_{0} \sum x_i \\
+\implies & \phi_{1} \sum x_i^{2} = \sum x_i y_i - (\bar{y} - \phi_{1} \bar{x}) \sum x_i \\
+\implies & \phi_{1} \sum x_i^{2} = \sum x_i y_i - \bar{y} \sum x_i + \phi_{1} \bar{x} \sum x_i \\
+\implies & \phi_{1} \left( \sum x_i^{2} - \bar{x} \sum x_i \right) = \sum x_i y_i - \bar{y} \sum x_i \\
+\implies & \phi_{1} = \frac{\sum x_i y_i - \bar{y} \sum x_i}{\sum x_i^{2} - \bar{x} \sum x_i} \\
+\implies & \phi_{1} = \frac{\sum x_i y_i - \bar{y} \sum x_i}{\sum x_i^{2} - I \bar{x}^{2}} \\
+\implies & \phi_{1} = \frac{\sum x_i y_i - I \bar{x} \bar{y}}{\sum (x_i - \bar{x})^{2}} \\
+\implies & \phi_{1} = \frac{\sum_{i=1}^I (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^I (x_i - \bar{x})^{2}}
+\end{align*}
+
+\begin{align*}
+\sum (x_i - \bar x)^2 &= \sum (x_i^2 - 2 x_i \bar x + \bar x^2) \\
+&= \sum x_i^2 - 2 \bar x \sum x_i + I \bar x^2 \\
+&= \sum x_i^2 - 2 \bar x(I\bar x) + I \bar x^2 \\
+&= \sum x_i^2 - 2 I \bar x^2 + I \bar x^2 \\
+&= \sum x_i^2 - I \bar x^2
+\end{align*} 
+
+\begin{align*}
+\sum (x_i - \bar x) (y_i - \bar y) &= \sum (x_i y_i - x_i \bar y - \bar x y_i + \bar x \bar y) \\
+&= \sum x_i y_i - \bar y \sum x_i - \bar x \sum y_i + I \bar x \bar y \\
+&= \sum x_i y_i - \bar y (I \bar x) - \bar x (I \bar y) + I \bar x \bar y \\
+&= \sum x_i y_i - I \bar x \bar y
+\end{align*}
+
+*2.3.* /Consider reformulating linear regression as a generative model, so we have \( x = \mathrm{g}[y, \boldsymbol{\phi}] = \phi_{0} + \phi_{1} y \). What is the new loss function? Find an expression for the inverse function \( y = \mathrm{g}^{-1}[x, \boldsymbol{\phi}] \) that we would use to perform inference. Will this model make the same predictions as the discriminative version for a given training dataset \( \{x_i, y_i\} \)? One way to establish this is to write code that ftis a line to three data points using both methods and see if the result is the same./
