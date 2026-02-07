@@ -641,3 +641,148 @@ plot_activation(rect, "rect")
 [[file:./.ob-jupyter/c0e22aee34cde951dc5bd6e9636210fd6fecccec.svg]]
 
 /rect:/ Piecewise “constant” functions with 7 constant regions.
+
+* Notebook 3.1 --- Shallow Neural Networks I
+
+#+begin_src jupyter-julia :session jl :async yes
+using Plots, LaTeXStrings
+
+pgfplotsx()
+PGFPlotsX.CUSTOM_PREAMBLE = [raw"\usepackage{newpx}"]
+
+ReLU(x) = max(0, x)
+#+end_src
+
+#+RESULTS:
+: ReLU (generic function with 1 method)
+
+#+begin_src jupyter-julia :session jl :async yes
+plot(ReLU, -5:0.1:5,
+    ylims=(-5, 5),
+    xlabel=L"z",
+    ylabel=L"\mathrm{ReLU}[z]",
+    legend=false
+)
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/40aabd4a02c97b6bd26c19afbd1570ea6a58da87.svg]]
+
+\begin{align*}
+\mathbf{b}_{\mathrm{in}} &\gets \boldsymbol{\Theta}_{1 \bullet} \\
+\mathbf{w}_{\mathrm{in}} &\gets \boldsymbol{\Theta}_{2 \bullet} \\
+b_{\mathrm{out}} &\gets \boldsymbol{\phi}_1 \\
+\mathbf{w}_{\mathrm{out}} &\gets \boldsymbol{\phi}_{2:k}
+\end{align*}
+
+\begin{align*}
+\mathbf{Z} &\gets \mathbf{w}_{\mathrm{in}} \mathbf{x}^{\top} + \mathbf{b}_{\mathrm{in}} \mathbf{1}_N^{\top} \\
+\mathbf{H} &\gets \mathrm{a}(\mathbf{Z}) \\
+\mathbf{H}_w &\gets \mathrm{diag}( \mathbf{w}_{\mathrm{out}} ) \mathbf{H}  \\
+\mathbf{y} &\gets \mathbf{1}_N^{\top} b_{\mathrm{out}} + \mathbf{1}_K^{\top} \mathbf{H}_w\\
+\\
+\text{or} \\
+\\
+\mathbf{Z} &\gets \mathbf{1}_N \mathbf{b}_{\mathrm{in}}^{\mathrm{\top}} + \mathbf{x} \mathbf{w}_{\mathrm{in}}^{\top} \\
+\mathbf{H} &\gets \mathrm{a}(\mathbf{Z}) \\
+\mathbf{y} &\gets \mathbf{1}_N b_{\mathrm{out}} + \mathbf{H} \mathbf{w}_{\mathrm{out}}
+\end{align*}
+
+\begin{align*}
+\mathbf{y} = \mathbf{1}_{N} b_{\mathrm{out}} + \mathrm{a} \! \left( \mathbf{1}_N \mathbf{b}_{\mathrm{in}}^{\top} + \mathbf{x} \mathbf{w}_{\mathrm{in}}^{\top} \right) \! \mathbf{w}_{\mathrm{out}}
+\end{align*}
+
+#+begin_src jupyter-julia :session jl :async yes
+function shallow_nn(x, a, ϕ, Θ)
+    b_in = Θ[:, 1]
+    w_in = Θ[:, 2]
+    b_out = ϕ[1]
+    w_out = ϕ[2:end]
+
+    Z = (w_in * x') .+ b_in
+    H = a.(Z)
+    H_w = H .* w_out
+    y = sum(H_w, dims=1) .+ b_out
+
+    return vec(y), Z, H, H_w
+end
+
+function plot_nn(x, y, Z, H, H_w; plot_all=false, x_data=nothing, y_data=nothing)
+    if plot_all
+        fig_data = [
+            (x, Z[1, :], L"\theta_{10} + \theta_{11} x"),
+            (x, Z[2, :], L"\theta_{20} + \theta_{21} x"),
+            (x, Z[3, :], L"\theta_{30} + \theta_{31} x"),
+            (x, H[1, :], L"h_1 = \mathrm{a}[\theta_{10} + \theta_{11} x]"),
+            (x, H[2, :], L"h_2 = \mathrm{a}[\theta_{20} + \theta_{21} x]"),
+            (x, H[3, :], L"h_3 = \mathrm{a}[\theta_{30} + \theta_{31} x]"),
+            (x, H_w[1, :], L"\phi_1 h_1"),
+            (x, H_w[2, :], L"\phi_2 h_2"),
+            (x, H_w[3, :], L"\phi_3 h_3"),
+            (x, y, L"\phi_0 + \phi_1 h_1 + \phi_2 h_2 + \phi_3 h_3")
+        ]
+        subplots = map(fig_data) do (x, y, title)
+            plot(x, y,
+                title=title, ylims=(-1, 1), xlabel=L"x", ylabel=L"y", legend=false
+            )
+        end
+        if !isnothing(x_data) && !isnothing(y_data)
+            scatter!(subplots[end], x_data, y_data,
+                markersize=2, markerstrokewidth=0, color=:blueviolet
+            )
+        end
+        plot(subplots..., layout=(4, 3), size=(600, 800))
+    else
+        p = plot(x, y,
+            legend=false, ylims=(-1, 1), xlabel=L"x", ylabel=L"y",
+            title=L"\phi_0 + \phi_1 h_1 + \phi_2 h_2 + \phi_3 h_3"
+        )
+        if !isnothing(x_data) && !isnothing(y_data)
+            scatter!(p, x_data, y_data,
+                markersize=2, markerstrokewidth=0, color=:blueviolet
+            )
+        end
+        return p
+    end
+end
+
+Θ = [0.3 -1.0
+     -1.0 2.0
+     -0.5 0.65]
+ϕ = [-0.3, 2.0, -1.0, 7.0]
+x = 0:0.01:1
+
+y, Z, H, H_w = shallow_nn(x, ReLU, ϕ, Θ)
+plot_nn(x, y, Z, H, H_w; plot_all=true)
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/5265122aba8a35960c5d391fc00be2dd9f169f16.svg]]
+
+#+begin_src jupyter-julia :session jl :async yes
+using Printf
+
+x_train = [0.09291784, 0.46809093, 0.93089486, 0.67612654, 0.73441752, 0.86847339, 0.49873225, 0.51083168, 0.18343972, 0.99380898, 0.27840809, 0.38028817, 0.12055708, 0.56715537, 0.92005746, 0.77072270, 0.85278176, 0.05315950, 0.87168699, 0.58858043]
+y_train = [-0.15934537, 0.18195445, 0.451270150, 0.13921448, 0.09366691, 0.30567674, 0.372291170, 0.40716968, -0.08131792, 0.41187806, 0.36943738, 0.3994327, 0.019062570, 0.35820410, 0.452564960, -0.0183121, 0.02957665, -0.24354444, 0.148038840,0.26824970]
+
+least_squares_loss(y, ŷ) = sum(abs2, y .- ŷ)
+
+Θ = [0.3 -1.0
+     -1.1 2.0
+     -0.5 0.65]
+ϕ = [0.4, -2.5, -1.0, 7.0]
+
+y_predict, Z, H, H_w = shallow_nn(x_train, ReLU, ϕ, Θ)
+
+loss = least_squares_loss(y_train, y_predict)
+@printf("Your Loss = %.3f, True value = 9.385", loss)
+
+y, Z, H, H_w = shallow_nn(x, ReLU, ϕ, Θ)
+plot_nn(x, y, Z, H, H_w; plot_all=true, x_data=x_train, y_data=y_train)
+#+end_src
+
+#+RESULTS:
+:RESULTS:
+: Your Loss = 0.166, True value = 9.385
+[[file:./.ob-jupyter/ef58c083afd2c98eeb242e17e3d7c1b664c20d43.svg]]
+:END:
