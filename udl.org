@@ -290,7 +290,9 @@ heatmap(0.75:0.01:0.9, 0.45:0.01:0.6, (ϕ₀, ϕ₁) -> L([ϕ₀, ϕ₁]),
 [[file:./.ob-jupyter/19af3c14f7f3f62fa4a91aa4c55cba3429f4148b.svg]]
 * Problems 2.1--2.3 (Supervised Learning)
 
+-----
 *2.1.* /To walk “downhill” on the loss function (equation 2.5), we measure its gradient with respect to the parameters \( \phi_0 \) and \( \phi_1 \). Calculate expressions for the slopes \( \partial L / \partial \phi_0 \) and \( \partial L / \partial \phi_1 \)./
+-----
 
 \begin{align*}
 \frac{\partial L}{\partial \phi_0} &= \frac{\partial}{\partial \phi_0} \sum_{i=1}^I (\mathrm{f}[x_i, \boldsymbol{\phi}] - y_i)^2 \\
@@ -307,7 +309,9 @@ heatmap(0.75:0.01:0.9, 0.45:0.01:0.6, (ϕ₀, ϕ₁) -> L([ϕ₀, ϕ₁]),
 &= 2 \sum_{i=0}^I x_i (\phi_0 + \phi_1 x_i - y_i)
 \end{align*}
 
+-----
 *2.2.* /Show that we can find the minimum of the loss function in closed form by setting the expression for the derivatives from problem 2.1 to zero and solving for \( \phi_0 \) and \( \phi_1 \). Note that this works for linear regression but not for more complex models; this is why we use iterative model fitting methods like gradient descent (figure 2.4)./
+-----
 
 \begin{align*}
 \frac{\partial L}{\partial \phi_0} = {} & 2 \sum_{i=1}^I (\phi_0 + \phi_1 x_i - y_i) = 0 \\
@@ -357,11 +361,14 @@ heatmap(0.75:0.01:0.9, 0.45:0.01:0.6, (ϕ₀, ϕ₁) -> L([ϕ₀, ϕ₁]),
 &= \sum x_i y_i - I \bar x \bar y
 \end{align*}
 
-*2.3.* /Consider reformulating linear regression as a generative model, so we have \( x = \mathrm{g}[y, \boldsymbol{\phi}] = \phi_{0} + \phi_{1} y \). What is the new loss function? Find an expression for the inverse function \( y = \mathrm{g}^{-1}[x, \boldsymbol{\phi}] \) that we would use to perform inference. Will this model make the same predictions as the discriminative version for a given training dataset \( \{x_i, y_i\} \)? One way to establish this is to write code that ftis a line to three data points using both methods and see if the result is the same./
+-----
+*2.3.* /Consider reformulating linear regression as a generative model, so we have \( x = \mathrm{g}[y, \boldsymbol{\phi}] = \phi_{0} + \phi_{1} y \). What is the new loss function? Find an expression for the inverse function \( y = \mathrm{g}^{-1}[x, \boldsymbol{\phi}] \) that we would use to perform inference. Will this model make the same predictions as the discriminative version for a given training dataset \( \{x_i, y_i\} \)? One way to establish this is to write code that fits a line to three data points using both methods and see if the result is the same./
+-----
+
 * Problems 3.1--3.8 (Shallow Neural Networks)
 
+-----
 *3.1.* /What kind of mapping from input to output would be created if the activation function in equation 3.1 was linear so that \( \mathrm{a}[z] = \psi_0 + \psi_1 z \)? What kind of mapping would be created if the activation function was removed, so \( \mathrm{a}[z] = z \)?/
-
 -----
 
 The equation resulting from a linear activation would be as follows:
@@ -383,9 +390,7 @@ So the result is the same as having no activation function, only with modified p
 In conclusion, a nonlinear activation function is necessary to “break” the function’s linearity.
 
 -----
-
 *3.2* /For each of the four linear regions in figure 3.3j, indicate which hidden units are inactive and which are active (i.e., which do and do not clip their inputs)./
-
 -----
 
 + Region 1: \( h_3 \)
@@ -394,9 +399,7 @@ In conclusion, a nonlinear activation function is necessary to “break” the f
 + Region 4: \( h_1 \), \( h_2 \)
 
 -----
-
 *3.3* /Derive expressions for the positions of the “joints” in function in figure 3.3j in terms of the ten parameters \( \boldsymbol{\phi} \) and the input \( x \). Derive expressions for the slopes of the four linear regions./
-
 -----
 
 The “joints” take place where the linear functions pass through 0, which is where the ReLU “cut” happens, resulting in the four distinct slopes:
@@ -419,14 +422,12 @@ As for the slopes, we simply sum the slopes from the linear functions of each ac
 \begin{align*}
 \text{S}_1 &= \phi_3 \theta_{31} \\
 \text{S}_2 &= \phi_1 \theta_{11} + \phi_3 \theta_{31} \\
-\text{S}_2 &= \phi_1 \theta_{11} + \phi_2 \theta_{21} + \phi_3 \theta_{31} \\
-\text{S}_2 &= \phi_1 \theta_{11} + \phi_2 \theta_{21}.
+\text{S}_3 &= \phi_1 \theta_{11} + \phi_2 \theta_{21} + \phi_3 \theta_{31} \\
+\text{S}_4 &= \phi_1 \theta_{11} + \phi_2 \theta_{21}.
 \end{align*}
 
 -----
-
 *3.4* /Draw a version of figure 3.3 where the y-intercept and slope of the third hidden unit have changed as in figure 3.14c. Assume that the remaining parameters remain the same./
-
 -----
 
 #+begin_src jupyter-julia :session jl :async yes
@@ -456,7 +457,6 @@ plot(
 [[file:./.ob-jupyter/b623a71ccdd55ed85e2139731fa4979aa924e227.svg]]
 
 -----
-
 *3.5* /Prove that the following property holds for \( \alpha \in \mathbb{R}^+ \):/
 
 \begin{align*}
@@ -464,7 +464,6 @@ plot(
 \end{align*}
 
 /This is known as the non-negative homogeneity property of the ReLU function./
-
 -----
 
 \begin{align*}
@@ -475,9 +474,7 @@ plot(
 \end{align*}
 
 -----
-
 *3.6* /Following on from problem 3.5, what happens to the shallow network defined in equations 3.3 and 3.4 when we multiply the parameters \( \theta_{10} \) and \( \theta_{11} \) by a positive constant \( \alpha \) and divide the slope \( \phi_1 \) by the same parameter \( \alpha \)? What happens if \( \alpha \) is negative?/
-
 -----
 
 Multiplying \( \theta_{10} \) and \( \theta_{11} \) by a constant \( \alpha \) is equivalent to multiplying the entire linear function by this constant:
@@ -519,15 +516,12 @@ Therefore, the overall effect of these operations when \( \alpha \) is negative 
 \end{align*}
 
 -----
-
 *3.7* /Consider fitting the model in equation 3.1 using a least squares loss function. Does this loss function have a unique minimum? i.e., is there a single “best” set of parameters?/
-
 -----
 
 The loss function cannot have a unique minumum. Even if the data can be perfectly described by a 4-region piecewise linear function, the hidden units can always be swapped without altering the final function.
 
 -----
-
 *3.8* /Consider replacing the ReLU activation function with (i) the Heaviside step function \( \textrm{heaviside}[z] \), (ii) the hyperbolic tangent function \( \mathrm{tanh}[z] \), and (iii) the rectangular function \( \mathrm{rect}[z] \), where:/
 
 \begin{align*}
@@ -550,7 +544,6 @@ The loss function cannot have a unique minumum. Even if the data can be perfectl
 \end{align*}
 
 /Provide an informal description of the family of functions that can be created by neural networks with one input, three hidden units, and one output for each activation function./
-
 -----
 
 #+begin_src jupyter-julia :session jl :async yes
@@ -786,3 +779,55 @@ plot_nn(x, y, Z, H, H_w; plot_all=true, x_data=x_train, y_data=y_train)
 : Your Loss = 0.166, True value = 9.385
 [[file:./.ob-jupyter/ef58c083afd2c98eeb242e17e3d7c1b664c20d43.svg]]
 :END:
+
+* Problems 3.9--3.13 (Shallow Neural Networks)
+
+-----
+*3.9* /Show that the third linear region in figure 3.3 has a slope that is the sum of the slopes of the first and fourth linear regions./
+-----
+
+As seen in exercise 3.3, these are the slopes for each of the 4 linear regions:
+
+\begin{align*}
+\textrm{S}_1 &= \phi_3 \theta_{31} \\
+\textrm{S}_2 &= \phi_1 \theta_{11} + \phi_3 \theta_{31} \\
+\textrm{S}_3 &= \phi_1 \theta_{11} + \phi_2 \theta_{21} + \phi_3 \theta_{31} \\
+\textrm{S}_4 &= \phi_1 \theta_{11} + \phi_2 \theta_{21}.
+\end{align*}
+
+It is easy to see that the slope for \( S_3 \) is composed by \( S_1 \) and \( S_4 \). That is,
+
+\begin{align*}
+\textrm{S}_3 &= S_3 + S_1.
+\end{align*}
+
+-----
+*3.10* /Consider a neural network with one input, one output, and three hidden units. The construction in figure 3.3 shows how this creates four linear regions. Under what circumstances could this network produce a function with fewer than four linear regions?/
+-----
+
+When multiple activations occur at the same point in the x-axis or when one of the non-intercept terms is 0.
+
+-----
+*3.11* /How many parameters does the model in figure 3.6 have?/
+-----
+
+18. \( \theta_{10} \), \( \theta_{11} \), \( \theta_{20} \), \( \theta_{21} \), \( \theta_{30} \), \( \theta_{31} \), \( \theta_{40} \), \( \theta_{41} \), \( \phi_{10} \), \( \phi_{11} \), \( \phi_{12} \), \( \phi_{13} \), \( \phi_{14} \), \( \phi_{20} \), \( \phi_{21} \), \( \phi_{22} \), \( \phi_{23} \), \( \phi_{24} \).
+
+        -----
+*3.12* /How many parameters does the model in figure 3.7 have?/
+-----
+
+13. \( \theta_{10} \), \( \theta_{11} \), \( \theta_{12} \), \( \theta_{20} \), \( \theta_{21} \), \( \theta_{22} \), \( \theta_{30} \), \( \theta_{31} \), \( \theta_{32} \), \( \phi_0 \), \( \phi_1 \), \( \phi_2 \), \( \phi_3 \).
+
+        -----
+*3.13* /What is the activation pattern for each of the seven regions in figure 3.8? In other words, which hidden units are active (pass the input) and which are inactive (clip the input) for each region?/
+-----
+
+Starting from the largest region and moving clockwise, internally:
+1. \( h_3 \)
+2. None.
+3. \( h_1 \)
+4. \( h_1, h_2 \)
+5. \( h_1, h_2, h_3 \)
+6. \( h_2, h_3 \)
+7. \( h_1 \)
