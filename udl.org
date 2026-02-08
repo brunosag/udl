@@ -831,3 +831,86 @@ Starting from the largest region and moving clockwise, internally:
 5. \( h_1, h_2, h_3 \)
 6. \( h_2, h_3 \)
 7. \( h_1 \)
+
+* Notebook 3.2 --- Shallow Neural Networks II
+
+#+begin_src jupyter-julia :session jl :async yes
+using Plots, LaTeXStrings
+
+gr()
+theme(:dracula)
+
+ReLU(x) = max(0, x)
+
+function shallow_nn_2D(X, a, ϕ, Θ)
+    # X : (D x N)
+    @views b_in = Θ[:, 1]       # (K)
+    @views W_in = Θ[:, 2:end]   # (K x D)
+    @views b_out = ϕ[:, 1]      # (O)
+    @views W_out = ϕ[:, 2:end]  # (O x K)
+
+    Z = (W_in * X) .+ b_in                           # (K x N)
+    H = a.(Z)                                        # (K x N)
+    H_w = reshape(W_out', size(W_out')..., 1) .*     # (K x O x N)
+          reshape(H, size(H, 1), 1, size(H, 2))
+    Y = dropdims(sum(H_w, dims=1), dims=1) .+ b_out  # (O x N)
+
+    return Y, Z, H, H_w
+end
+
+function plot_nn_2D(x, Y, Z, H, H_w)
+    fig_data = [
+        (x, x, Z[1, :], L"\theta_{10} + \theta_{11} x_1 + \theta_{12} x_2"),
+        (x, x, Z[2, :], L"\theta_{20} + \theta_{21} x_1 + \theta_{22} x_2"),
+        (x, x, Z[3, :], L"\theta_{30} + \theta_{31} x_1 + \theta_{32} x_2"),
+        (x, x, H[1, :],
+         L"h_1 = \mathrm{a}[\theta_{10} + \theta_{11} x_1 + \theta_{12} x_2]"),
+        (x, x, H[2, :],
+         L"h_2 = \mathrm{a}[\theta_{20} + \theta_{21} x_1 + \theta_{22} x_2]"),
+        (x, x, H[3, :],
+         L"h_3 = \mathrm{a}[\theta_{30} + \theta_{31} x_1 + \theta_{32} x_2]"),
+        (x, x, H_w[1, 1, :], L"\phi_{11} h_1"),
+        (x, x, H_w[2, 1, :], L"\phi_{12} h_2"),
+        (x, x, H_w[3, 1, :], L"\phi_{13} h_3"),
+        (x, x, H_w[1, 2, :], L"\phi_{21} h_1"),
+        (x, x, H_w[2, 2, :], L"\phi_{22} h_2"),
+        (x, x, H_w[3, 2, :], L"\phi_{23} h_3"),
+        (x, x, Y[1, :],
+         L"\phi_{10} + \phi_{11} h_1 + \phi_{12} h_2 + \phi_{13} h_3"),
+        (x, x, Y[2, :],
+         L"\phi_{20} + \phi_{21} h_1 + \phi_{22} h_2 + \phi_{23} h_3")
+    ]
+
+    subplots = map(fig_data) do (x, y, z, title)
+        N = Int(√length(z))
+        Zᵣ = reshape(z, (N, N))
+        p = heatmap(x, y, Zᵣ,
+            title=title,
+            xlabel=L"x_1",
+            ylabel=L"x_2",
+            titlefontsize=11,
+            tickfontsize=5,
+            guidefontsize=9,
+            cmap=:viridis,
+            clims=(-10, 10)
+        )
+        contour!(p, x, y, Zᵣ, cmap=:white, opacity=0.25)
+    end
+
+    plot(subplots..., layout=(5, 3), size=(1000, 1200))
+end
+
+Θ = [-4.0  0.9  0.0
+     5.0 -0.9 -0.5
+     -7.0  0.5  0.9]
+ϕ = [ 0.0 -2.0  2.0  1.5
+     -2.0 -1.0 -2.0  0.8]
+x = 0:0.1:10
+X = stack(vec(collect(Iterators.product(x, x))))
+
+Y, Z, H, H_w = shallow_nn_2D(X, ReLU, ϕ, Θ)
+plot_nn_2D(x, Y, Z, H, H_w)
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/6eb0a93a049d649b85e7ead4d3ea114bfb4543f3.svg]]
