@@ -914,3 +914,81 @@ plot_nn_2D(x, Y, Z, H, H_w)
 
 #+RESULTS:
 [[file:./.ob-jupyter/6eb0a93a049d649b85e7ead4d3ea114bfb4543f3.svg]]
+* Notebook 3.3 --- Shallow Network Regions
+
+#+begin_src jupyter-julia :session jl :async yes :results output
+number_regions(Dᵢ, D) = sum(binomial(BigInt(D), j) for j in 0:Dᵢ)
+
+@show number_regions(2, 3)
+@show number_regions(10, 50)
+@show number_regions(10, 8)
+#+end_src
+
+#+RESULTS:
+: number_regions(2, 3) = 7
+: number_regions(10, 50) = 13432735556
+: number_regions(10, 8) = 256
+
+#+begin_src jupyter-julia :session jl :async yes
+using Plots, LaTeXStrings
+
+pgfplotsx()
+PGFPlotsX.CUSTOM_PREAMBLE = [raw"\usepackage{newpx}"]
+theme(:dark)
+
+units = 0:1000
+dims = [1, 5, 10, 50, 100]
+regions = [number_regions(Dᵢ, D) for D in units, Dᵢ in dims]
+
+idxs = 5:-1:1
+plot(units, regions[:, idxs],
+    yscale=:log10,
+    ylims=(1e0, 1e150),
+    label=[L"D_i=%$d" for d in dims[idxs]'],
+    xlabel=L"\text{Number of hidden units, } D",
+    ylabel=L"\text{Number of regions, } N"
+)
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/06516a940635ef6c98473f2462c724d44810bd3b.svg]]
+
+
+#+begin_src jupyter-julia :session jl :async yes :results output
+number_parameters(Dᵢ, D) = D * (Dᵢ + 2) + 1
+
+@show number_parameters(2, 3)
+@show number_parameters(10, 50)
+@show number_parameters(10, 8)
+#+end_src
+
+#+RESULTS:
+: number_parameters(2, 3) = 13
+: number_parameters(10, 50) = 601
+: number_parameters(10, 8) = 97
+
+#+begin_src jupyter-julia :session jl :async yes
+using Plots, LaTeXStrings
+
+pgfplotsx()
+PGFPlotsX.CUSTOM_PREAMBLE = [raw"\usepackage{newpx}"]
+theme(:dark)
+
+units = 0:200
+dims = [1, 5, 10, 50, 100]
+regions = [number_regions(Dᵢ, D * 500 / Dᵢ) for D in units, Dᵢ in dims]
+parameters = [number_parameters(Dᵢ, D * 500 / Dᵢ) for D in units, Dᵢ in dims]
+
+idxs = 5:-1:1
+plot(parameters[:, idxs], regions[:, idxs],
+    yscale=:log10,
+    xlims=(0, 100_000),
+    ylims=(1e0, 1e150),
+    label=[L"D_i=%$d" for d in dims[idxs]'],
+    xlabel=L"\text{Number of parameters, } D",
+    ylabel=L"\text{Number of regions, } N"
+)
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/5eb42615cebd890d3390ad44125516089fc5519c.svg]]
