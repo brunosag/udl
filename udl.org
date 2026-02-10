@@ -992,6 +992,7 @@ plot(parameters[:, idxs], regions[:, idxs],
 
 #+RESULTS:
 [[file:./.ob-jupyter/5eb42615cebd890d3390ad44125516089fc5519c.svg]]
+
 * Problems 3.14--3.17 (Shallow Neural Networks)
 
 -----
@@ -1064,3 +1065,91 @@ y_3 = \phi_{30} + \phi_{31} h_1 + \phi_{32} h_2 + \phi_{33} h_3 + \phi_{34} h_4 
 \begin{align*}
 \text{N. parameters} = D(D_i + 1) + D_o(D + 1)
 \end{align*}
+
+* Notebook 3.4 --- Activation Functions
+
+#+begin_src jupyter-julia :session jl :async yes
+using Plots, LaTeXStrings
+
+pgfplotsx()
+PGFPlotsX.CUSTOM_PREAMBLE = [raw"\usepackage{newpx}"]
+theme(:dark)
+
+l₁(x) = θ[1, 1] + θ[2, 1] * x
+l₂(x) = θ[1, 2] + θ[2, 2] * x
+l₃(x) = θ[1, 3] + θ[2, 3] * x
+
+function plot_activation(a, plot_title)
+    f(x) = ϕ[1] + ϕ[2] * a(l₁(x)) + ϕ[3] * a(l₂(x)) + ϕ[4] * a(l₃(x))
+
+    fig_data = [
+        (x -> l₁(x), L"\theta_{10} + \theta_{11} x"),
+        (x -> l₂(x), L"\theta_{20} + \theta_{21} x"),
+        (x -> l₃(x), L"\theta_{30} + \theta_{31} x"),
+        (x -> a(l₁(x)), L"h_1 = \mathrm{a}[\theta_{10} + \theta_{11} x]"),
+        (x -> a(l₂(x)), L"h_2 = \mathrm{a}[\theta_{20} + \theta_{21} x]"),
+        (x -> a(l₃(x)), L"h_3 = \mathrm{a}[\theta_{30} + \theta_{31} x]"),
+        (x -> ϕ[1] * a(l₁(x)), L"\phi_1 h_1"),
+        (x -> ϕ[2] * a(l₂(x)), L"\phi_2 h_2"),
+        (x -> ϕ[3] * a(l₃(x)), L"\phi_3 h_3"),
+        (x -> f(x), L"\phi_0 + \phi_1 h_1 + \phi_2 h_2 + \phi_3 h_3")
+    ]
+    subplots = map(fig_data) do (f, title)
+        plot(f, x, title=title, titlefontsize=11)
+    end
+
+    plot(
+        subplots...,
+        legend=false,
+        layout=(4, 3),
+        size=(600, 900),
+        ylims=(-1, 1),
+        xlabel=L"x",
+        ylabel=L"y",
+        plot_title=plot_title,
+        tickfontsize=6,
+        guidefontsize=9
+    )
+end
+
+x = 0:0.01:1
+ϕ = [-0.3, 2.0, -1.0, 7.0]
+θ = [ 0.3 -1.0 -0.5
+     -1.0  2.0  0.65]
+
+ReLU(z) = max(0, z)
+
+plot_activation(ReLU, "ReLU")
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/28ff61b5eb153c8081927b18908c5f93b6a46610.svg]]
+
+#+begin_src jupyter-julia :session jl :async yes
+ϕ = [0.3, 0.5, -1.0, 0.9]
+θ = [ 0.3 -1.0 -0.5
+     -1.0  2.0  0.65]
+
+sigmoid(z) = 1 / (1 + exp(-10z))
+
+plot_activation(sigmoid, "sigmoid")
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/c551c961bd18f62abe1a29f7c36375171e0af634.svg]]
+
+#+begin_src jupyter-julia :session jl :async yes
+heaviside(z) = z >= 0 ? 1 : 0
+plot_activation(heaviside, "heaviside")
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/01279e2b553f79add76daa7f75c480003aa62357.svg]]
+
+#+begin_src jupyter-julia :session jl :async yes
+lin(z; a=0.5, b=-0.4) = a + b * z
+plot_activation(lin, "lin")
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/543e501dbbdd09fe8297ee9987017217a2f5fe99.svg]]
